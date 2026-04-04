@@ -3,20 +3,21 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-// Need high limit to handle the base64 images payload from frontend
 app.use(express.json({ limit: '50mb' }));
 
-// Initial mock data simulating a database
+// ─── BIKE DATABASE ────────────────────────────────────────────────────────────
 let bikesDB = [
+  // ── MOTORCYCLES ──
   {
     id: '1',
-    name: 'Royal Enfield Classic 350 Signals Edition',
+    name: 'Royal Enfield Classic 350 Signals',
     price: 178000,
     year: 2022,
     kmDriven: 8200,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Iconic retro cruiser in the stunning Signals edition colorway. Single owner, regularly serviced at authorized RE service center. All original parts, no modifications. Comes with 2 keys, service booklet, and original accessories.',
+    featured: false,
+    description: 'Iconic retro cruiser in the stunning Signals edition colorway. Single owner, regularly serviced at authorized RE service center. All original parts. Comes with 2 keys, service booklet, and original accessories.',
     images: [
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?q=80&w=2048&auto=format&fit=crop',
@@ -35,7 +36,8 @@ let bikesDB = [
     kmDriven: 12500,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Aggressive street naked with Quickshifter+ and full-color TFT display. Slipper clutch, cornering ABS, lean-angle sensitive traction control. Minor scuff on right fairing panel — priced accordingly. First owner, all service on time at KTM dealership.',
+    featured: false,
+    description: 'Aggressive street naked with Quickshifter+ and full-color TFT display. Cornering ABS, lean-angle sensitive traction control. Minor scuff on right fairing — priced accordingly. First owner, all service on time at KTM dealership.',
     images: [
       'https://images.unsplash.com/photo-1609630875171-b1321377ee65?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=2070&auto=format&fit=crop',
@@ -54,12 +56,13 @@ let bikesDB = [
     kmDriven: 3100,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Near new condition, barely used. Yamaha MT-15 V2 with Variable Valve Actuation (VVA) for smooth low-end torque and strong top-end power. MotoGP livery. Dealer maintained, all records available.',
+    featured: false,
+    description: 'Near new condition, barely used. Yamaha MT-15 V2 with Variable Valve Actuation (VVA). MotoGP livery, assist & slipper clutch, LED headlight. Dealer maintained, all records available.',
     images: [
       'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1568772585407-9f1a456b4edc?q=80&w=2070&auto=format&fit=crop',
     ],
-    specs: { 'Engine CC': '155cc', 'Power': '18.4 bhp', 'Torque': '14.1 Nm', 'Mileage': '47 km/l', 'Technology': 'VVA + Assist & Slipper Clutch', 'ABS': 'Single Channel' },
+    specs: { 'Engine CC': '155cc', 'Power': '18.4 bhp', 'Torque': '14.1 Nm', 'Mileage': '47 km/l', 'Technology': 'VVA + Slipper Clutch', 'ABS': 'Single Channel' },
     highlights: ['Engine CC', 'Mileage', 'Technology'],
     status: 'available',
     interestCount: 22,
@@ -73,7 +76,8 @@ let bikesDB = [
     kmDriven: 18500,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Adventure touring ready! Himalayan in the gorgeous Salt colorway. Tripper navigation pod installed. Serviced at 15,000 and 17,500 km. Ideal for highway touring and off-road exploration.',
+    featured: false,
+    description: 'Adventure touring ready. Himalayan in gorgeous Salt colorway with Tripper navigation pod. Serviced at 15,000 and 17,500 km. Comes with tank bag and luggage racks. Ideal for highway and off-road.',
     images: [
       'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1547549082-4b0449f8d025?q=80&w=2070&auto=format&fit=crop',
@@ -92,7 +96,8 @@ let bikesDB = [
     kmDriven: 9800,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Sharp, sporty streetfighter. Fuel injected, ABS equipped NS200. Clean body with no scratches. Chain and sprocket recently replaced. Ideal entry-level performance bike.',
+    featured: false,
+    description: 'Sharp, sporty streetfighter with fuel injection and ABS. Clean body, no scratches. Chain, sprocket, oil and filter recently done. Ideal entry-level performance bike.',
     images: [
       'https://images.unsplash.com/photo-1580341289255-5b47c98a8e95?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=2070&auto=format&fit=crop',
@@ -111,7 +116,8 @@ let bikesDB = [
     kmDriven: 11200,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Honda reliability at its finest. CB Hornet 2.0 with split LED headlights, digital-analog combo instrument cluster, and Honda Selectable Torque Control (HSTC). Full service history at Honda dealership in Thane.',
+    featured: false,
+    description: 'Honda CB Hornet 2.0 with split LED headlights and Honda Selectable Torque Control (HSTC). Full service history at Honda dealership Thane. Tyres recently replaced. Ready to ride.',
     images: [
       'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=2104&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=2070&auto=format&fit=crop',
@@ -130,7 +136,8 @@ let bikesDB = [
     kmDriven: 15500,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Performance-focused streetfighter with Race Tuned Fuel Injection and SmartXonnect Bluetooth. Both front and rear discs. All service records available.',
+    featured: false,
+    description: 'Performance streetfighter with Race Tuned Fuel Injection and SmartXonnect Bluetooth. Dual-channel ABS. Satin Black with red racing decals. All service records available.',
     images: [
       'https://images.unsplash.com/photo-1568772585407-9f1a456b4edc?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2070&auto=format&fit=crop',
@@ -149,7 +156,8 @@ let bikesDB = [
     kmDriven: 5200,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'Low kilometer premium naked from Kawasaki. Parallel-twin engine, Sugomi-inspired aggressive styling, full LED lighting. Purchased from Kawasaki dealer in Mumbai, all warranty documents available.',
+    featured: false,
+    description: 'Low kilometer premium naked from Kawasaki. Parallel-twin engine, Sugomi aggressive styling, full LED. Purchased from Kawasaki Mumbai, all warranty documents available. Perfect condition.',
     images: [
       'https://images.unsplash.com/photo-1609630875171-b1321377ee65?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=2070&auto=format&fit=crop',
@@ -168,7 +176,8 @@ let bikesDB = [
     kmDriven: 22100,
     vehicleType: 'motorcycle',
     fuelType: 'petrol',
-    description: 'The ultimate long-distance tourer from India. Dominar 400 with full-LED projector headlamps, liquid-cooled engine, and slipper clutch. New tyres, fresh oil, and new chain set recently done.',
+    featured: false,
+    description: 'The ultimate long-distance tourer. Dominar 400 with full-LED projector headlamps, liquid-cooled engine, slipper clutch. New tyres, fresh oil, new chain set. Road-trip ready.',
     images: [
       'https://images.unsplash.com/photo-1547549082-4b0449f8d025?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1580341289255-5b47c98a8e95?q=80&w=2070&auto=format&fit=crop',
@@ -179,7 +188,48 @@ let bikesDB = [
     interestCount: 16,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
   },
-  // ── SCOOTIES ──────────────────────────────────────────
+  // ── ELECTRIC MOTORCYCLES ──
+  {
+    id: '14',
+    name: 'Revolt RV400 — Electric Motorcycle',
+    price: 138000,
+    year: 2023,
+    kmDriven: 6800,
+    vehicleType: 'motorcycle',
+    fuelType: 'electric',
+    featured: true,
+    description: 'India\'s first AI-enabled electric motorcycle. Revolt RV400 with swappable battery, 150 km range, and app-controlled artificial exhaust note. Single owner, home-charged daily. No fuel costs, zero emissions, and near-zero maintenance. Battery in excellent health.',
+    images: [
+      'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=2070&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1580341289255-5b47c98a8e95?q=80&w=2070&auto=format&fit=crop',
+    ],
+    specs: { 'Battery': '3.24 kWh', 'Range': '150 km', 'Top Speed': '85 km/h', 'Charging': '4.5 hrs (Home)', 'Motor': '3 kW Rated', 'Features': 'AI + App Connected' },
+    highlights: ['Range', 'Top Speed', 'Features'],
+    status: 'available',
+    interestCount: 27,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5).toISOString(),
+  },
+  {
+    id: '15',
+    name: 'Ultraviolette F77 Recon — Electric Sportbike',
+    price: 290000,
+    year: 2024,
+    kmDriven: 2200,
+    vehicleType: 'motorcycle',
+    fuelType: 'electric',
+    featured: true,
+    description: 'India\'s fastest and most advanced electric motorcycle. Ultraviolette F77 Recon with 10.3 kWh battery, 0-100 kmph in 2.9 seconds, and 323 km range. Carbon-fibre composite body, ride modes, traction control. Barely used — near showroom condition.',
+    images: [
+      'https://images.unsplash.com/photo-1609630875171-b1321377ee65?q=80&w=2070&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2070&auto=format&fit=crop',
+    ],
+    specs: { 'Battery': '10.3 kWh', 'Range': '323 km', 'Top Speed': '155 km/h', '0-100': '2.9 seconds', 'Motor': '38.9 bhp Peak', 'Body': 'Carbon Composite' },
+    highlights: ['Range', 'Top Speed', '0-100'],
+    status: 'available',
+    interestCount: 41,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 0.5).toISOString(),
+  },
+  // ── SCOOTIES ──
   {
     id: '10',
     name: 'Honda Activa 6G Special Edition',
@@ -188,7 +238,8 @@ let bikesDB = [
     kmDriven: 5200,
     vehicleType: 'scooty',
     fuelType: 'petrol',
-    description: 'India\'s best-selling scooter in pristine condition. Honda Activa 6G with BS6 compliant engine, LED headlamp, and external fuel-lid. Single lady owner, only used for office commute. All service done at Honda dealership. Comes with original accessories and 2 keys.',
+    featured: false,
+    description: 'India\'s best-selling scooter in pristine condition. BS6 engine, LED headlamp, external fuel-lid. Single lady owner, office-use only. All service at Honda dealership. Comes with original accessories and 2 keys.',
     images: [
       'https://images.unsplash.com/photo-1571068316344-75bc76f77890?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?q=80&w=2070&auto=format&fit=crop',
@@ -207,7 +258,8 @@ let bikesDB = [
     kmDriven: 9800,
     vehicleType: 'scooty',
     fuelType: 'petrol',
-    description: 'TVS Jupiter Classic with USB charging port and eco mode. Excellent for city riding — superb mileage and smooth ride quality. Titanium Grey color. Well-maintained, all service records available from TVS service center. No accident history.',
+    featured: false,
+    description: 'TVS Jupiter Classic with USB charging port and eco mode. Excellent city rider with superb mileage. Titanium Grey. All service records from TVS service center. No accident history.',
     images: [
       'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1571068316344-75bc76f77890?q=80&w=2070&auto=format&fit=crop',
@@ -226,7 +278,8 @@ let bikesDB = [
     kmDriven: 3400,
     vehicleType: 'scooty',
     fuelType: 'petrol',
-    description: 'Stylish and modern 125cc scooter with Smart Motor Generator (hybrid assist). Fascino 125 in the trendy Metallic Red color. Near new — barely used. Full LED lighting, digital instrument cluster, and side stand engine cut-off. Dealer serviced.',
+    featured: false,
+    description: 'Stylish 125cc scooter with Smart Motor Generator hybrid assist. Metallic Red. Near new — barely used. Full LED, digital instrument cluster, side stand cut-off. Dealer serviced.',
     images: [
       'https://images.unsplash.com/photo-1607592424398-d5cc30ffe08a?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?q=80&w=2070&auto=format&fit=crop',
@@ -245,7 +298,8 @@ let bikesDB = [
     kmDriven: 4100,
     vehicleType: 'scooty',
     fuelType: 'electric',
-    description: 'Future-ready electric scooter with 4.5 kWh battery and 181 km claimed range. Ola S1 Pro in Midnight Blue with Geo-fencing, cruise control, voice assistant, and over-the-air updates. Charged at home, minimal running cost. No fuel, no pollution. Perfect for city commute.',
+    featured: true,
+    description: 'Future-ready electric scooter with 4.5 kWh battery and 181 km range. Ola S1 Pro in Midnight Blue with geo-fencing, cruise control, voice assistant, and OTA updates. Minimal running cost, home charged.',
     images: [
       'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=2070&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1607592424398-d5cc30ffe08a?q=80&w=2070&auto=format&fit=crop',
@@ -256,20 +310,57 @@ let bikesDB = [
     interestCount: 34,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
   },
+  {
+    id: '16',
+    name: 'Ather 450X Gen 3 — Electric Scooter',
+    price: 148000,
+    year: 2024,
+    kmDriven: 1800,
+    vehicleType: 'scooty',
+    fuelType: 'electric',
+    featured: true,
+    description: 'The smartest electric scooter in India. Ather 450X Gen 3 with 2.9 kWh battery, 146 km range, touchscreen dashboard, and Ather Grid fast-charging access. Warp mode, auto-hold, and Google Maps navigation built-in. Brand new condition.',
+    images: [
+      'https://images.unsplash.com/photo-1607592424398-d5cc30ffe08a?q=80&w=2070&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1571068316344-75bc76f77890?q=80&w=2070&auto=format&fit=crop',
+    ],
+    specs: { 'Battery': '2.9 kWh', 'Range': '146 km', 'Top Speed': '90 km/h', 'Charging': '1 hr (Ather Grid)', 'Motor': '8.8 kW Peak', 'Display': '7" Touchscreen' },
+    highlights: ['Range', 'Charging', 'Display'],
+    status: 'available',
+    interestCount: 38,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+  },
 ];
 
 let statsDB = {
-  totalBikes: 13,
+  totalBikes: 16,
   soldBikes: 7,
   happyCustomers: 143,
-  totalInterest: 203,
+  totalInterest: 319,
 };
+
+// ─── ROUTES ───────────────────────────────────────────────────────────────────
+
+// GET /api/bikes/featured — featured-marked or newest 4 fallback
+app.get('/api/bikes/featured', (req, res) => {
+  const available = bikesDB.filter(b => b.status === 'available');
+  const featuredMarked = available.filter(b => b.featured === true);
+
+  if (featuredMarked.length > 0) {
+    // Return up to 4 dealer-marked featured bikes
+    return res.json(featuredMarked.slice(0, 4));
+  }
+
+  // Fallback: 4 newest available bikes
+  const byNewest = [...available].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json(byNewest.slice(0, 4));
+});
 
 // GET /api/bikes
 app.get('/api/bikes', (req, res) => {
   const { status, maxPrice, minYear } = req.query;
   let filtered = bikesDB;
-  
+
   if (status && status !== 'all') {
     filtered = filtered.filter(b => b.status === status);
   } else if (!status) {
@@ -278,9 +369,8 @@ app.get('/api/bikes', (req, res) => {
 
   if (maxPrice) filtered = filtered.filter(b => b.price <= Number(maxPrice));
   if (minYear) filtered = filtered.filter(b => b.year >= Number(minYear));
-  
-  // Send sorted by newest
-  res.json(filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)));
+
+  res.json(filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
 });
 
 // GET /api/bikes/:id
@@ -296,14 +386,21 @@ app.post('/api/bikes', (req, res) => {
     ...req.body,
     id: Math.random().toString(36).substr(2, 9),
     status: 'available',
+    featured: false,
     interestCount: 0,
     createdAt: new Date().toISOString(),
   };
-  
   bikesDB = [newBike, ...bikesDB];
   statsDB.totalBikes += 1;
-  
   res.status(201).json(newBike);
+});
+
+// PUT /api/bikes/:id/featured — toggle featured status
+app.put('/api/bikes/:id/featured', (req, res) => {
+  const bike = bikesDB.find(b => b.id === req.params.id);
+  if (!bike) return res.status(404).json({ error: 'Bike not found' });
+  bike.featured = !bike.featured;
+  res.json({ id: bike.id, featured: bike.featured });
 });
 
 // POST /api/interest
@@ -322,6 +419,7 @@ app.post('/api/bikes/sold/:id', (req, res) => {
   const bike = bikesDB.find(b => b.id === req.params.id);
   if (bike && bike.status !== 'sold') {
     bike.status = 'sold';
+    bike.featured = false;
     statsDB.soldBikes += 1;
     statsDB.totalBikes = Math.max(0, statsDB.totalBikes - 1);
   }
@@ -331,25 +429,17 @@ app.post('/api/bikes/sold/:id', (req, res) => {
 // PUT /api/bikes/:id
 app.put('/api/bikes/:id', (req, res) => {
   const index = bikesDB.findIndex(b => b.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Bike not found' });
-  }
-  
-  bikesDB[index] = { 
-    ...bikesDB[index], 
-    ...req.body 
-  };
-  
+  if (index === -1) return res.status(404).json({ error: 'Bike not found' });
+  bikesDB[index] = { ...bikesDB[index], ...req.body };
   res.json(bikesDB[index]);
 });
-
 
 // GET /api/stats
 app.get('/api/stats', (req, res) => {
   res.json(statsDB);
 });
 
-// GET / - Root route to confirm server is working
+// GET / — health check
 app.get('/', (req, res) => {
   res.send('BikeDekh Backend API is running!');
 });
