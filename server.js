@@ -117,6 +117,11 @@ app.get('/api/stats', (req, res) => {
   res.json(statsDB);
 });
 
+// GET / - Root route to confirm server is working
+app.get('/', (req, res) => {
+  res.send('BikeDekh Backend API is running!');
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Backend Central Server running on http://localhost:${PORT}`);
