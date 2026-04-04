@@ -112,6 +112,22 @@ app.post('/api/bikes/sold/:id', (req, res) => {
   res.json(bike || { error: 'Not found' });
 });
 
+// PUT /api/bikes/:id
+app.put('/api/bikes/:id', (req, res) => {
+  const index = bikesDB.findIndex(b => b.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Bike not found' });
+  }
+  
+  bikesDB[index] = { 
+    ...bikesDB[index], 
+    ...req.body 
+  };
+  
+  res.json(bikesDB[index]);
+});
+
+
 // GET /api/stats
 app.get('/api/stats', (req, res) => {
   res.json(statsDB);
