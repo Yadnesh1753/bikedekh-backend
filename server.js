@@ -339,6 +339,17 @@ let statsDB = {
   totalInterest: 319,
 };
 
+// Separate sold history log (persists sold records with date+price)
+let soldHistoryDB = [
+  { id: 'sh1', name: 'Bajaj Pulsar RS200 BS6', price: 148000, vehicleType: 'motorcycle', fuelType: 'petrol', year: 2021, kmDriven: 18200, soldAt: new Date(Date.now() - 1000*60*60*24*2).toISOString() },
+  { id: 'sh2', name: 'Honda CB300R', price: 225000, vehicleType: 'motorcycle', fuelType: 'petrol', year: 2022, kmDriven: 9500, soldAt: new Date(Date.now() - 1000*60*60*24*6).toISOString() },
+  { id: 'sh3', name: 'TVS NTorq 125 Race XP', price: 92000, vehicleType: 'scooty', fuelType: 'petrol', year: 2022, kmDriven: 7800, soldAt: new Date(Date.now() - 1000*60*60*24*12).toISOString() },
+  { id: 'sh4', name: 'Hero Splendor Plus XTEC', price: 78000, vehicleType: 'motorcycle', fuelType: 'petrol', year: 2023, kmDriven: 4100, soldAt: new Date(Date.now() - 1000*60*60*24*20).toISOString() },
+  { id: 'sh5', name: 'Royal Enfield Meteor 350', price: 210000, vehicleType: 'motorcycle', fuelType: 'petrol', year: 2021, kmDriven: 14500, soldAt: new Date(Date.now() - 1000*60*60*24*35).toISOString() },
+  { id: 'sh6', name: 'Ather 450S Electric', price: 128000, vehicleType: 'scooty', fuelType: 'electric', year: 2023, kmDriven: 2900, soldAt: new Date(Date.now() - 1000*60*60*24*42).toISOString() },
+  { id: 'sh7', name: 'KTM RC 200', price: 195000, vehicleType: 'motorcycle', fuelType: 'petrol', year: 2022, kmDriven: 11200, soldAt: new Date(Date.now() - 1000*60*60*24*58).toISOString() },
+];
+
 // ─── ROUTES ───────────────────────────────────────────────────────────────────
 
 // GET /api/bikes/featured — featured-marked or newest 4 fallback
@@ -418,12 +429,67 @@ app.post('/api/interest', (req, res) => {
 app.post('/api/bikes/sold/:id', (req, res) => {
   const bike = bikesDB.find(b => b.id === req.params.id);
   if (bike && bike.status !== 'sold') {
+    const soldAt = new Date().toISOString();
     bike.status = 'sold';
     bike.featured = false;
+    bike.soldAt = soldAt;
+    bike.soldPrice = bike.price;
     statsDB.soldBikes += 1;
     statsDB.totalBikes = Math.max(0, statsDB.totalBikes - 1);
+    // Add to sold history
+    soldHistoryDB = [{ id: bike.id, name: bike.name, price: bike.price, vehicleType: bike.vehicleType || 'motorcycle', fuelType: bike.fuelType || 'petrol', year: bike.year, kmDriven: bike.kmDriven, soldAt }, ...soldHistoryDB];
   }
   res.json(bike || { error: 'Not found' });
+});
+
+// GET /api/bikes/sold-history
+app.get('/api/bikes/sold-history', (req, res) => {
+  const { from, to } = req.query;
+  let history = [...soldHistoryDB];
+  // Also include bikes from bikesDB that were marked sold
+  const soldFromMain = bikesDB.filter(b => b.status === 'sold' && b.soldAt);
+  const mainIds = new Set(history.map(h => h.id));
+  soldFromMain.forEach(b => { if (!mainIds.has(b.id)) history.push({ id: b.id, name: b.name, price: b.soldPrice || b.price, vehicleType: b.vehicleType, fuelType: b.fuelType, year: b.year, kmDriven: b.kmDriven, soldAt: b.soldAt }); });
+  if (from) history = history.filter(h => new Date(h.soldAt) >= new Date(from));
+  if (to) history = history.filter(h => new Date(h.soldAt) <= new Date(new Date(to).setHours(23,59,59)));
+  history.sort((a, b) => new Date(b.soldAt) - new Date(a.soldAt));
+  res.json(history);
+});
+
+// GET /api/dashboard — aggregated data for dashboard
+app.get('/api/dashboard', (req, res) => {
+  const available = bikesDB.filter(b => b.status === 'available');
+  const inventoryWorth = available.reduce((sum, b) => sum + b.price, 0);
+  
+  // Build monthly revenue for last 6 months using soldHistoryDB
+  const allSold = [...soldHistoryDB];
+  const soldFromMain = bikesDB.filter(b => b.status === 'sold' && b.soldAt);
+  const mainIds = new Set(allSold.map(h => h.id));
+  soldFromMain.forEach(b => { if (!mainIds.has(b.id)) allSold.push({ id: b.id, price: b.soldPrice || b.price, soldAt: b.soldAt }); });
+  
+  const monthLabels = [];
+  const monthRevenue = [];
+  const monthCount = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const label = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+    const sold = allSold.filter(s => {
+      const sd = new Date(s.soldAt);
+      return sd.getMonth() === d.getMonth() && sd.getFullYear() === d.getFullYear();
+    });
+    monthLabels.push(label);
+    monthRevenue.push(sold.reduce((sum, s) => sum + s.price, 0));
+    monthCount.push(sold.length);
+  }
+  
+  // Inventory breakdown
+  const motorcycleCount = available.filter(b => b.vehicleType !== 'scooty').length;
+  const scootyCount = available.filter(b => b.vehicleType === 'scooty').length;
+  const electricCount = available.filter(b => b.fuelType === 'electric').length;
+  const petrolCount = available.filter(b => b.fuelType !== 'electric').length;
+  
+  res.json({ inventoryWorth, monthLabels, monthRevenue, monthCount, motorcycleCount, scootyCount, electricCount, petrolCount, totalAvailable: available.length });
 });
 
 // PUT /api/bikes/:id
