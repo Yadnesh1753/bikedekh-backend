@@ -29,6 +29,7 @@ const bikeSchema = new mongoose.Schema({
   vehicleType: String,
   fuelType: String,
   featured: { type: Boolean, default: false },
+  featuredOrder: { type: Number, default: 99 },
   description: String,
   images: [String],
   specs: mongoose.Schema.Types.Mixed,
@@ -184,7 +185,7 @@ app.get('/api/stats', async (req, res) => {
 
 app.get('/api/bikes/featured', async (req, res) => {
   try {
-    let featuredMarked = await Bike.find({ status: 'available', featured: true }).limit(4);
+    let featuredMarked = await Bike.find({ status: 'available', featured: true }).sort({ featuredOrder: 1, createdAt: -1 }).limit(4);
     if (featuredMarked.length > 0) return res.json(featuredMarked);
     const newest = await Bike.find({ status: 'available' }).sort({ createdAt: -1 }).limit(4);
     res.json(newest);
@@ -237,9 +238,16 @@ app.put('/api/bikes/:id/featured', async (req, res) => {
   try {
     const bike = await Bike.findById(req.params.id);
     if (!bike) return res.status(404).json({ error: 'Bike not found' });
-    bike.featured = !bike.featured;
+    
+    // Support either toggling featured boolean, or updating featuredOrder
+    if (req.body && req.body.order !== undefined) {
+        bike.featuredOrder = req.body.order;
+    } else {
+        bike.featured = !bike.featured;
+    }
+    
     await bike.save();
-    res.json({ id: bike._id, featured: bike.featured });
+    res.json({ id: bike._id, featured: bike.featured, featuredOrder: bike.featuredOrder });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
